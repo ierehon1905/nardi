@@ -1,18 +1,12 @@
-<!-- script that draws a cirlc on canvas -->
-
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { createEventDispatcher } from 'svelte';
 	import './utils';
 
-	// import { sketch } from './sketch';
 	import { runGame, type Game } from './game';
 	import type { CellColor, GameField, TurnError, UiCallbacks } from './types';
-
-	// const dispatch = createEventDispatcher();
+	import { DEBUG } from './constants';
 
 	let board: HTMLDivElement;
-	// let banner: HTMLDivElement;
 	let game: Game;
 	let tossedValues: number[] | null = null;
 
@@ -26,6 +20,7 @@
 		turn = color;
 		console.log('start turn', color);
 		tossedValues = null;
+		error = null;
 
 		showBanner = true;
 
@@ -34,10 +29,6 @@
 		setTimeout(() => {
 			showBanner = false;
 		}, 3000);
-
-		// banner.style.animation = 'none';
-		// banner.offsetHeight; /* trigger reflow */
-		// banner.style.animation = null;
 	}
 
 	const uiCallbacks: UiCallbacks = {
@@ -82,14 +73,10 @@
 	<div>
 		<div class="board-container">
 			<div bind:this={board} />
-			<!-- <div class="turn-banner" bind:this={banner}>White turn</div> -->
 			{#if showBanner}
 				<div class="turn-banner">{turn} turn</div>
 			{/if}
 		</div>
-		{#if showBanner}
-			<div>showBanner</div>
-		{/if}
 		{#if turn}
 			<div>turn: {turn}</div>
 		{/if}
@@ -105,13 +92,15 @@
 			<div>{error}</div>
 		{/if}
 	</div>
-	<code>
-		<pre>
-			{#if debugGameField}
-				{JSON.stringify({ ...debugGameField, cells: '[redacted]' }, null, 2)}
-			{/if}
-		</pre>
-	</code>
+	{#if DEBUG}
+		<code>
+			<pre>
+				{#if debugGameField}
+					{JSON.stringify({ ...debugGameField, cells: '[redacted]' }, null, 2)}
+				{/if}
+			</pre>
+		</code>
+	{/if}
 </div>
 
 <style>

@@ -8,6 +8,7 @@ import {
 	type GameField
 } from './types';
 import type { RenderCallbacks } from './game';
+import { DEBUG } from './constants';
 
 const colors = {
 	brown: '#8B4513',
@@ -17,9 +18,7 @@ const colors = {
 	darkCoal: '#1B1B1B'
 };
 
-const DEBUG = true;
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+// const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function checkColor(e: Konva.KonvaEventObject<DragEvent>) {
 	if (!e.target || !e.target.hasName('checker')) {
@@ -348,8 +347,9 @@ function autoMoveChecker({
 				duration: 0.2,
 				onFinish: () => {
 					checkerToMove.attrs.checkerIndex = index;
-
-					checkerToMove.attrs.text.text(`${fromCellIndex} ${index}`);
+					if (DEBUG) {
+						checkerToMove.attrs.text.text(`${fromCellIndex} ${index}`);
+					}
 					checkerToMove.moveTo(layer);
 				}
 			});
@@ -373,7 +373,10 @@ function autoMoveChecker({
 				checkerRef.attrs.cellIndex = toCellIndex;
 
 				checkerRef.attrs.checkerIndex = toCheckerIndex ?? toCellCount - 1;
-				checkerRef.attrs.text.text(`${toCellIndex} ${checkerRef.attrs.checkerIndex}`);
+
+				if (DEBUG) {
+					checkerRef.attrs.text.text(`${toCellIndex} ${checkerRef.attrs.checkerIndex}`);
+				}
 				checkerRef.moveTo(layer);
 				resolve();
 			}
@@ -421,16 +424,20 @@ function initCheckers({
 				// name: `checker ${cell.color}`
 			});
 
-			const text = new Konva.Text({
-				text: `${cellIndex} ${checkerIndex}`,
-				fontSize: 10,
-				offsetX: cellSize / 2,
-				align: 'center',
-				width: cellSize
-			});
+			if (DEBUG) {
+				const text = new Konva.Text({
+					text: `${cellIndex} ${checkerIndex}`,
+					fontSize: 10,
+					offsetX: cellSize / 2,
+					align: 'center',
+					width: cellSize
+				});
+
+				checker.add(text);
+				checker.attrs.text = text;
+			}
 
 			checker.add(checkerCircle);
-			checker.add(text);
 
 			if (DEBUG) {
 				const bbox = new Konva.Rect({
@@ -447,7 +454,6 @@ function initCheckers({
 
 			checker.attrs.cellIndex = cellIndex;
 			checker.attrs.checkerIndex = checkerIndex;
-			checker.attrs.text = text;
 
 			layer.add(checker);
 
