@@ -18,7 +18,8 @@ export enum TurnError {
 	WrongTurn = 'Wrong turn',
 	DoubleTossIsNotAllowed = 'Double toss is not allowed',
 	NoCheckerAtSpecifiedIndex = 'No checker at specified index',
-	InvalidPlayerMove = 'Invalid player move'
+	InvalidPlayerMove = 'Invalid player move',
+	DoubleHeadMoveOnNonFirstTurn = 'Double head move on non first turn',
 }
 
 export enum MoveResult {
@@ -35,6 +36,8 @@ export type GameField = {
 	gameStyle: GameStyle;
 	turn: CellColor;
 	tossed?: number[];
+	turnCount?: number;
+	turnMoves?: [number, number][];
 };
 
 export type CheckersMap = Record<number, Konva.Group[]>;

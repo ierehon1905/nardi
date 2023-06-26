@@ -10,11 +10,10 @@
 	let game: Game;
 	let tossedValues: number[] | null = null;
 
-	$: debugGameField = null as GameField | null;
-	$: error = null as TurnError | null;
-	$: turn = null as CellColor | null;
-
-	$: showBanner = false;
+	let debugGameField = null as GameField | null;
+	let error = null as TurnError | null;
+	let turn = null as CellColor | null;
+	let showBanner = false;
 
 	function startTurnHandler(color: CellColor) {
 		turn = color;

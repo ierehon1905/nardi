@@ -152,6 +152,37 @@ export function playerMoveChecker(
 		return [TurnError.InvalidPlayerMove, null];
 	}
 
+	// if turnMoves contains a move from "head" cell the next move can not be from "head" cell
+	if (
+		gameField.turnCount &&
+		gameField.turnCount + 1 > 2 &&
+		gameField.turnMoves &&
+		gameField.turnMoves.length > 0
+	) {
+		const headCellBlackIndex = 23;
+		const headCellWhiteIndex = 11;
+
+		const lastMove = gameField.turnMoves[gameField.turnMoves.length - 1];
+
+		if (
+			colorToMove === CellColor.Black &&
+			lastMove[0] === headCellBlackIndex &&
+			fromCellIndex === headCellBlackIndex
+		) {
+			console.warn('Black can not move from head cell');
+			return [TurnError.DoubleHeadMoveOnNonFirstTurn, null];
+		}
+
+		if (
+			colorToMove === CellColor.White &&
+			lastMove[0] === headCellWhiteIndex &&
+			fromCellIndex === headCellWhiteIndex
+		) {
+			console.warn('White can not move from head cell');
+			return [TurnError.DoubleHeadMoveOnNonFirstTurn, null];
+		}
+	}
+
 	const error = moveChecker(gameField, fromCellIndex, toCellIndex, colorToMove);
 
 	if (error) {
@@ -161,10 +192,16 @@ export function playerMoveChecker(
 	const index = gameField.tossed.indexOf(step);
 	gameField.tossed.splice(index, 1);
 
+	gameField.turnMoves ??= [];
+
 	if (gameField.tossed.length === 0) {
 		gameField.turn = gameField.turn === CellColor.White ? CellColor.Black : CellColor.White;
+		gameField.turnCount ??= 0;
+		gameField.turnCount++;
+		gameField.turnMoves = [];
 		return [null, MoveResult.TurnIsOver];
+	} else {
+		gameField.turnMoves.push([fromCellIndex, toCellIndex]);
 	}
-
 	return [null, MoveResult.HasNextMove];
 }
