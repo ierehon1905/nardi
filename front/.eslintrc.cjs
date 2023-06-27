@@ -26,5 +26,9 @@ module.exports = {
 				parser: '@typescript-eslint/parser'
 			}
 		}
-	]
+	],
+	globals: {
+		neffos: 'readonly',
+		Konva: 'readonly'
+	}
 };

@@ -19,7 +19,7 @@ export enum TurnError {
 	DoubleTossIsNotAllowed = 'Double toss is not allowed',
 	NoCheckerAtSpecifiedIndex = 'No checker at specified index',
 	InvalidPlayerMove = 'Invalid player move',
-	DoubleHeadMoveOnNonFirstTurn = 'Double head move on non first turn',
+	DoubleHeadMoveOnNonFirstTurn = 'Double head move on non first turn'
 }
 
 export enum MoveResult {

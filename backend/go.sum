@@ -102,6 +102,8 @@ github.com/iris-contrib/go.uuid v2.0.0+incompatible h1:XZubAYg61/JwnJNbZilGjf3b3
 github.com/iris-contrib/go.uuid v2.0.0+incompatible/go.mod h1:iz2lgM/1UnEf1kP0L/+fafWORmlnuysV2EMP8MW+qe0=
 github.com/iris-contrib/httpexpect/v2 v2.0.5/go.mod h1:JpRu+DEVVCA6KHLKUAs72QoaevQESqLHuG5s1CQ+QiA=
 github.com/iris-contrib/jade v1.1.4/go.mod h1:EDqR+ur9piDl6DUgs6qRrlfzmlx/D5UybogqrXvJTBE=
+github.com/iris-contrib/middleware/cors v0.0.0-20230531125531-980d3a09a458 h1:V60rHQJc6DieKV1BqHIGclraPdO4kinuFAZIrPGHN7s=
+github.com/iris-contrib/middleware/cors v0.0.0-20230531125531-980d3a09a458/go.mod h1:7eVziAp1yUwFB/ZMg71n84VWQH+7wukvxcHuF2e7cbg=
 github.com/iris-contrib/pongo2 v0.0.1/go.mod h1:Ssh+00+3GAZqSQb30AvBRNxBx7rf0GqwkjqxNd0u65g=
 github.com/iris-contrib/schema v0.0.2/go.mod h1:iYszG0IOsuIsfzjymw1kMzTL8YQcCWlm65f3wX8J5iA=
 github.com/iris-contrib/schema v0.0.6 h1:CPSBLyx2e91H2yJzPuhGuifVRnZBBJ3pCOMbOvPZaTw=

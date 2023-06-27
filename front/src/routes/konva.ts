@@ -1,5 +1,7 @@
 import type { Layer } from 'konva/lib/Layer';
 import type { Stage } from 'konva/lib/Stage';
+import { DEBUG } from './constants';
+import type { RenderCallbacks } from './game';
 import {
 	//
 	CellColor,
@@ -7,8 +9,6 @@ import {
 	type CheckersMap,
 	type GameField
 } from './types';
-import type { RenderCallbacks } from './game';
-import { DEBUG } from './constants';
 
 const colors = {
 	brown: '#8B4513',
@@ -48,7 +48,7 @@ export const runKonva = (
 	const { stage, layer, dynamicLayer } = initKonva(boardContainer);
 
 	let fromCellIndex: number | null;
-	let movingChecker: Konva.Group | null;
+	// let movingChecker: Konva.Group | null;
 	let highlightedCells: Konva.Rect[] = [];
 
 	stage.on('dragstart', (e) => {
@@ -58,21 +58,18 @@ export const runKonva = (
 			return;
 		}
 
-		// const closestCellIndex = getCheckerCellIndex(e, stage);
-
-		// console.log('closestCellIndex', closestCellIndex);
-
 		fromCellIndex = e.target?.attrs?.cellIndex;
-		if (fromCellIndex === undefined || fromCellIndex === null) {
+		const fromCellIndexRef = fromCellIndex;
+		if (fromCellIndexRef === undefined || fromCellIndexRef === null) {
 			console.warn('dragstart: fromCellIndex is undefined');
 			return;
 		}
 
-		movingChecker = e.target as unknown as Konva.Group;
+		// movingChecker = e.target as unknown as Konva.Group;
 
 		// highlight cells that are available for movement
 		const availableCellIndexes = gameField.tossed?.map((step) => {
-			let toCellIndex = fromCellIndex! - step;
+			let toCellIndex = fromCellIndexRef - step;
 			if (toCellIndex < 0) {
 				toCellIndex = 24 + toCellIndex;
 			}
@@ -217,7 +214,6 @@ function buildHandles({
 	stage,
 	dynamicLayer,
 	layer,
-	gameField,
 	checkers
 }: {
 	stage: Stage;
@@ -439,18 +435,16 @@ function initCheckers({
 
 			checker.add(checkerCircle);
 
-			if (DEBUG) {
-				const bbox = new Konva.Rect({
-					width: cellSize,
-					height: checkerSize,
-					stroke: 'red',
-					strokeWidth: 1,
-					offsetX: cellSize / 2,
-					offsetY: checkerSize / 2
-				});
+			const bbox = new Konva.Rect({
+				width: cellSize,
+				height: checkerSize,
+				stroke: DEBUG ? 'red' : undefined,
+				strokeWidth: DEBUG ? 1 : undefined,
+				offsetX: cellSize / 2,
+				offsetY: checkerSize / 2
+			});
 
-				checker.add(bbox);
-			}
+			checker.add(bbox);
 
 			checker.attrs.cellIndex = cellIndex;
 			checker.attrs.checkerIndex = checkerIndex;

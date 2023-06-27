@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import './utils';
 
 	import { runGame, type Game } from './game';
@@ -14,6 +14,7 @@
 	let error = null as TurnError | null;
 	let turn = null as CellColor | null;
 	let showBanner = false;
+	let connection: neffos.Conn | null = null;
 
 	function startTurnHandler(color: CellColor) {
 		turn = color;
@@ -34,7 +35,7 @@
 		startTurn: startTurnHandler
 	};
 
-	onMount(() => {
+	onMount(async () => {
 		game = runGame(board, uiCallbacks);
 
 		turn = game._gameField.turn;
@@ -44,6 +45,49 @@
 		setTimeout(() => {
 			showBanner = false;
 		}, 3000 + 500);
+
+		const conn = await neffos.dial(
+			'ws://localhost:8080/api/ws',
+			{
+				default: {
+					// "default" namespace.
+					_OnNamespaceConnected: (nsConn, msg) => {
+						console.log('connected to namespace: ' + msg.Namespace);
+
+						// addMessage('connected to namespace: ' + msg.Namespace);
+						// handleNamespaceConnectedConn(nsConn);
+					},
+					_OnNamespaceDisconnect: (nsConn, msg) => {
+						// addMessage('disconnected from namespace: ' + msg.Namespace);
+						console.log('disconnected from namespace: ' + msg.Namespace);
+					}
+					// chat: function (nsConn, msg) {
+					// 	// "chat" event.
+					// 	// addMessage(msg.Body);
+
+					// 	console.log('chat', msg.Body);
+					// }
+				}
+			},
+			{
+				reconnect: 5000,
+				headers: {
+					'X-Username': 'leon'
+				}
+			}
+		);
+
+		conn.connect('default');
+
+		connection = conn;
+	});
+
+	onDestroy(() => {
+		if (connection) {
+			console.log('close connection');
+
+			connection.close();
+		}
 	});
 
 	function toss() {

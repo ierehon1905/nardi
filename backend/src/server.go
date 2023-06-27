@@ -3,7 +3,9 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 
+	"github.com/iris-contrib/middleware/cors"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/sessions"
 	"github.com/kataras/iris/v12/websocket"
@@ -20,12 +22,38 @@ func RunServer() {
 	RunDb()
 
 	app := iris.New()
+	crs := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowCredentials: true,
+	})
+	app.UseRouter(crs)
 
-	ws := neffos.New(websocket.DefaultGorillaUpgrader, neffos.Namespaces{
+	ws := neffos.New(websocket.DefaultGobwasUpgrader, neffos.Namespaces{
+		"": neffos.Events{
+			websocket.OnAnyEvent: func(nsConn *websocket.NSConn, msg neffos.Message) error {
+				log.Printf("[%s] sent a message: %s", nsConn, string(msg.Body))
+				return nil
+			},
+		},
 		"default": neffos.Events{
-			"poll-game": pollGamesWsHandler,
+			websocket.OnNamespaceConnected: func(nsConn *websocket.NSConn, msg websocket.Message) error {
+				// with `websocket.GetContext` you can retrieve the Iris' `Context`.
+				ctx := websocket.GetContext(nsConn.Conn)
+
+				log.Printf("[%s] connected to namespace [%s] with IP [%s]",
+					nsConn, msg.Namespace,
+					ctx.RemoteAddr())
+				return nil
+			},
+			websocket.OnNamespaceDisconnect: func(nsConn *websocket.NSConn, msg websocket.Message) error {
+				log.Printf("[%s] disconnected from namespace [%s]", nsConn, msg.Namespace)
+				return nil
+			},
+			// "poll-game": pollGamesWsHandler,
 		},
 	})
+
+	app.Get("/api/ws", websocket.Handler(ws))
 
 	api := app.Party("/api")
 	{
@@ -35,13 +63,7 @@ func RunServer() {
 		api.Get("/game/:id", getGameHandler)
 		// app.Get("/login", loginHandler)
 		app.Get("/logout", logoutHandler)
-		app.Get("/ws", websocket.Handler(ws))
 	}
-
-	// wsApi := api.Party("/ws")
-	// {
-	// 	app.Get("/poll-games", websocket.Handler(()))
-	// }
 
 	app.Listen(":8080")
 }
@@ -50,6 +72,17 @@ func pollGamesWsHandler(ns *neffos.NSConn, msg neffos.Message) error {
 	// ctx := websocket.GetContext(ns.Conn)
 
 	fmt.Println("pollGamesWsHandler")
+
+	// send the message to the client
+
+	// ns.Conn.Server().Broadcast(ns, msg)
+
+	// send ack to the client
+
+	ns.Emit("ack", neffos.Marshal(neffos.Message{
+		Body: []byte("message received"),
+	}))
+
 	// [...]
 	return nil
 }
