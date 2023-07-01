@@ -57,7 +57,7 @@ func RunServer() {
 
 	api := app.Party("/api")
 	{
-		api.Use(iris.Compression)
+		// api.Use(iris.Compression)
 		api.Get("/ping", pingHandler)
 		api.Post("/user-session", createUserSessionHandler)
 		api.Get("/game/:id", getGameHandler)

@@ -80,6 +80,8 @@
 		conn.connect('default');
 
 		connection = conn;
+
+		fetch('/api/ping');
 	});
 
 	onDestroy(() => {
