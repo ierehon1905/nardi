@@ -1,0 +1,16 @@
+{
+  "name": "nardi",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app-runner.cjs",
+  "scripts": {
+    "package": "./scripts/package.sh",
+    "package:all": "npm --prefix front run package && npm --prefix backend run package && npm run package",
+    "deps": "npm --prefix ./front run prod:install",
+    "upload": "./scripts/upload.sh"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module"
+}

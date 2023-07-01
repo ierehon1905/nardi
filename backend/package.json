@@ -1,0 +1,16 @@
+{
+  "name": "backend",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "start:go": "./build/gostrip",
+    "build": "go build -C src -o ../build/gostrip",
+    "build:linux": "GOOS=linux GOARCH=amd64 go build -C src -o ../build/gostrip",
+    "dev": "npm run build && npm run start:go",
+    "package": "./scripts/package.sh"
+  },
+  "author": "",
+  "license": "ISC"
+}

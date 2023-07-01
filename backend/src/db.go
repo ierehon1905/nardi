@@ -1,7 +1,10 @@
 package main
 
 import (
-	"gorm.io/driver/sqlite"
+	"fmt"
+	"os"
+
+	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -24,6 +27,10 @@ func RunDb() {
 	db, err := gorm.Open(sqlite.Open("gorm.db"), &gorm.Config{})
 
 	if err != nil {
+		// fmt.Println(err)
+
+		// print to stderr in iris
+		os.Stderr.WriteString(fmt.Sprintf("failed to connect database: %s\n", err.Error()))
 		panic("failed to connect database")
 	}
 

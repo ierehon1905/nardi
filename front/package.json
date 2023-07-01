@@ -5,7 +5,10 @@
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
+		"package": "./scripts/package.sh",
+		"upload": "./scripts/upload.sh",
 		"preview": "vite preview",
+		"preview:package": "node package-dist/runner.cjs",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --plugin-search-dir . --check . && eslint .",
