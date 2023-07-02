@@ -1,10 +1,10 @@
 <script lang="ts">
+	import { BACKEND_HOST, DEBUG } from '$lib/constants';
 	import { onMount, onDestroy } from 'svelte';
 	import './utils';
 
 	import { runGame, type Game } from './game';
 	import type { CellColor, GameField, TurnError, UiCallbacks } from './types';
-	import { DEBUG } from './constants';
 
 	let board: HTMLDivElement;
 	let game: Game;
@@ -15,6 +15,7 @@
 	let turn = null as CellColor | null;
 	let showBanner = false;
 	let connection: neffos.Conn | null = null;
+	let activeUsersCount = 0;
 
 	function startTurnHandler(color: CellColor) {
 		turn = color;
@@ -47,19 +48,24 @@
 		}, 3000 + 500);
 
 		const conn = await neffos.dial(
-			'ws://localhost:8080/api/ws',
+			`ws://${BACKEND_HOST}/api/ws`,
 			{
 				default: {
-					// "default" namespace.
 					_OnNamespaceConnected: (nsConn, msg) => {
-						console.log('connected to namespace: ' + msg.Namespace);
-
-						// addMessage('connected to namespace: ' + msg.Namespace);
-						// handleNamespaceConnectedConn(nsConn);
+						console.log('connected to namespace: ', msg.Namespace, msg);
 					},
 					_OnNamespaceDisconnect: (nsConn, msg) => {
-						// addMessage('disconnected from namespace: ' + msg.Namespace);
-						console.log('disconnected from namespace: ' + msg.Namespace);
+						console.log('disconnected from namespace: ', msg.Namespace, msg);
+					},
+					'active-users': (nsConn, msg) => {
+						const number = parseInt(msg.Body);
+
+						if (isNaN(number)) {
+							console.error('active-users: invalid number', msg.Body);
+							return;
+						}
+
+						activeUsersCount = number;
 					}
 					// chat: function (nsConn, msg) {
 					// 	// "chat" event.
@@ -77,11 +83,23 @@
 			}
 		);
 
-		conn.connect('default');
+		conn.connect('default').then((nsConn) => {
+			nsConn.ask('active-users', '').then((res) => {
+				// console.log('active-users', res.Body);
+				const number = parseInt(res.Body);
+
+				if (isNaN(number)) {
+					console.error('active-users: invalid number', res.Body);
+					return;
+				}
+
+				activeUsersCount = number;
+			});
+		});
 
 		connection = conn;
 
-		fetch('/api/ping');
+		fetch(`//${BACKEND_HOST}/api/ping`);
 	});
 
 	onDestroy(() => {
@@ -146,6 +164,9 @@
 			</pre>
 		</code>
 	{/if}
+	<div>
+		<div>active users: {activeUsersCount}</div>
+	</div>
 </div>
 
 <style>

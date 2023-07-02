@@ -37,6 +37,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"http-proxy-middleware": "^2.0.6",
 		"polka": "^0.5.2",
 		"ws": "^8.13.0"
 	}

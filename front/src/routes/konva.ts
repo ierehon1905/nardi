@@ -1,6 +1,6 @@
 import type { Layer } from 'konva/lib/Layer';
 import type { Stage } from 'konva/lib/Stage';
-import { DEBUG } from './constants';
+import { DEBUG } from '$lib/constants';
 import type { RenderCallbacks } from './game';
 import {
 	//

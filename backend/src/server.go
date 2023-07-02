@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/iris-contrib/middleware/cors"
 	"github.com/kataras/iris/v12"
@@ -28,36 +27,10 @@ func RunServer() {
 	})
 	app.UseRouter(crs)
 
-	ws := neffos.New(websocket.DefaultGobwasUpgrader, neffos.Namespaces{
-		"": neffos.Events{
-			websocket.OnAnyEvent: func(nsConn *websocket.NSConn, msg neffos.Message) error {
-				log.Printf("[%s] sent a message: %s", nsConn, string(msg.Body))
-				return nil
-			},
-		},
-		"default": neffos.Events{
-			websocket.OnNamespaceConnected: func(nsConn *websocket.NSConn, msg websocket.Message) error {
-				// with `websocket.GetContext` you can retrieve the Iris' `Context`.
-				ctx := websocket.GetContext(nsConn.Conn)
-
-				log.Printf("[%s] connected to namespace [%s] with IP [%s]",
-					nsConn, msg.Namespace,
-					ctx.RemoteAddr())
-				return nil
-			},
-			websocket.OnNamespaceDisconnect: func(nsConn *websocket.NSConn, msg websocket.Message) error {
-				log.Printf("[%s] disconnected from namespace [%s]", nsConn, msg.Namespace)
-				return nil
-			},
-			// "poll-game": pollGamesWsHandler,
-		},
-	})
-
-	app.Get("/api/ws", websocket.Handler(ws))
+	app.Get("/api/ws", websocket.Handler(WebsocketServer))
 
 	api := app.Party("/api")
 	{
-		// api.Use(iris.Compression)
 		api.Get("/ping", pingHandler)
 		api.Post("/user-session", createUserSessionHandler)
 		api.Get("/game/:id", getGameHandler)
@@ -69,15 +42,8 @@ func RunServer() {
 }
 
 func pollGamesWsHandler(ns *neffos.NSConn, msg neffos.Message) error {
-	// ctx := websocket.GetContext(ns.Conn)
 
 	fmt.Println("pollGamesWsHandler")
-
-	// send the message to the client
-
-	// ns.Conn.Server().Broadcast(ns, msg)
-
-	// send ack to the client
 
 	ns.Emit("ack", neffos.Marshal(neffos.Message{
 		Body: []byte("message received"),
@@ -87,36 +53,19 @@ func pollGamesWsHandler(ns *neffos.NSConn, msg neffos.Message) error {
 	return nil
 }
 
-// func loginHandler(ctx iris.Context) {
-// 	session := sess.Start(ctx)
-
-// 	// Authentication goes here
-// 	// ...
-
-// 	// Set user as authenticated
-// 	session.Set("authenticated", true)
-
-// }
-
 func logoutHandler(ctx iris.Context) {
 	session := sess.Start(ctx)
 
-	// Revoke users authentication
-	session.Set("authenticated", false)
-	// Or to remove the variable:
-	session.Delete("authenticated")
-	// Or destroy the whole session:
 	session.Destroy()
 }
 
 func secretHandler(ctx iris.Context) {
-	// Check if user is authenticated
+
 	if auth, _ := sess.Start(ctx).GetBoolean("authenticated"); !auth {
 		ctx.StatusCode(iris.StatusForbidden)
 		return
 	}
 
-	// Print secret message
 	ctx.WriteString("The cake is a lie!")
 }
 
