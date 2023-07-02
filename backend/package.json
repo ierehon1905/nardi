@@ -9,7 +9,8 @@
     "build": "go build -C src -o ../build/gostrip",
     "build:linux": "GOOS=linux GOARCH=amd64 go build -C src -o ../build/gostrip",
     "dev": "npm run build && npm run start:go",
-    "package": "./scripts/package.sh"
+    "package": "./scripts/package.sh",
+    "package:preview": "./scripts/package.sh preview"
   },
   "author": "",
   "license": "ISC"

@@ -5,7 +5,11 @@
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
+		"build:prod": "source .env.prod && vite build",
+		"build:preview": "source .env.preview && vite build",
 		"package": "./scripts/package.sh",
+		"package:prod": "./scripts/package.sh prod",
+		"package:preview": "./scripts/package.sh preview",
 		"upload": "./scripts/upload.sh",
 		"preview": "vite preview",
 		"preview:package": "node package-dist/runner.cjs",

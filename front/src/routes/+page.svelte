@@ -47,17 +47,19 @@
 			showBanner = false;
 		}, 3000 + 500);
 
+		const websocketProtocol = location.protocol === 'https:' ? 'wss' : 'ws';
+
 		const conn = await neffos.dial(
-			`ws://${BACKEND_HOST}/api/ws`,
+			`${websocketProtocol}://${BACKEND_HOST}/api/ws`,
 			{
 				default: {
-					_OnNamespaceConnected: (nsConn, msg) => {
+					_OnNamespaceConnected: (nsConn: any, msg: any) => {
 						console.log('connected to namespace: ', msg.Namespace, msg);
 					},
-					_OnNamespaceDisconnect: (nsConn, msg) => {
+					_OnNamespaceDisconnect: (nsConn: any, msg: any) => {
 						console.log('disconnected from namespace: ', msg.Namespace, msg);
 					},
-					'active-users': (nsConn, msg) => {
+					'active-users': (nsConn: any, msg: any) => {
 						const number = parseInt(msg.Body);
 
 						if (isNaN(number)) {

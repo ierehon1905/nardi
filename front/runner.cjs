@@ -9,13 +9,20 @@ async function main() {
 
 	const app = polka();
 
-	// proxy all requests to /api to the backend
-	app.use(
-		'/api',
-		proxy('/api', {
-			target: 'http://localhost:8080'
-		})
-	);
+	const proxyMiddleWare = proxy({
+		target: 'http://localhost:8080',
+		ws: true,
+		logLevel: 'debug',
+		changeOrigin: true
+	});
+
+	app.use((req, res, next) => {
+		if (req.url.startsWith('/api')) {
+			proxyMiddleWare(req, res, next);
+		} else {
+			handler(req, res, next);
+		}
+	});
 
 	app.use(handler);
 
