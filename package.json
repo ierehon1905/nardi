@@ -8,6 +8,7 @@
     "package:all": "npm --prefix front run package:prod && npm --prefix backend run package && npm run package",
     "package:all:preview": "npm --prefix front run package:preview && npm --prefix backend run package:preview && npm run package",
     "deps": "npm --prefix ./front run prod:install",
+    "clean:ports": "./scripts/clean-ports.sh",
     "upload": "./scripts/upload.sh"
   },
   "keywords": [],
