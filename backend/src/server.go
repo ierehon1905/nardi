@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	cookieNameForSessionID = "mycookiesessionnameid"
+	cookieNameForSessionID = "npid"
 	sess                   = sessions.New(sessions.Config{Cookie: cookieNameForSessionID})
 )
 

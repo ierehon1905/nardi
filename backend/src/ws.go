@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/kataras/iris/v12/websocket"
 	"github.com/kataras/neffos"
@@ -57,6 +58,16 @@ var WebsocketServer = neffos.New(websocket.DefaultGobwasUpgrader, neffos.Namespa
 
 			return nil
 		},
+		websocket.OnRoomJoined: func(nsConn *websocket.NSConn, msg websocket.Message) error {
+			log.Printf("[%s] joined to room [%s]", nsConn, msg.Room)
+
+			return nil
+		},
+		websocket.OnRoomLeft: func(nsConn *websocket.NSConn, msg websocket.Message) error {
+			log.Printf("[%s] left from room [%s]", nsConn, msg.Room)
+
+			return nil
+		},
 		"active-users": func(nsConn *websocket.NSConn, msg websocket.Message) error {
 
 			return neffos.Reply([]byte(fmt.Sprintf("%d", activeUsersCount)))
@@ -64,6 +75,22 @@ var WebsocketServer = neffos.New(websocket.DefaultGobwasUpgrader, neffos.Namespa
 		"game-move": func(nsConn *websocket.NSConn, msg websocket.Message) error {
 
 			return nil
+		},
+		"poll-game": func(nsConn *websocket.NSConn, msg websocket.Message) error {
+
+			// sleep for 5 seconds
+			time.Sleep(5 * time.Second)
+
+			// generate random RoomID
+			RoomID := "RoomID" + fmt.Sprintf("%d", time.Now().UnixNano())
+
+			type pollGameResponse struct {
+				RoomID string `json:"RoomID"`
+			}
+
+			return neffos.Reply(neffos.Marshal(pollGameResponse{
+				RoomID: RoomID,
+			}))
 		},
 	},
 })

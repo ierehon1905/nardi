@@ -1,10 +1,15 @@
+<script lang="ts" context="module">
+	// neffos.dial2 = neffos.dial;
+</script>
+
 <script lang="ts">
 	import { BACKEND_HOST, DEBUG } from '$lib/constants';
 	import { onMount, onDestroy } from 'svelte';
 	import './utils';
 
-	import { runGame, type Game } from './game';
-	import type { CellColor, GameField, TurnError, UiCallbacks } from './types';
+	import { runGame, type Game } from '$lib/engine/game';
+	import type { CellColor, GameField, TurnError, UiCallbacks } from '../lib/engine/types';
+	import type { PollGameResponse, UserSession } from './types';
 
 	let board: HTMLDivElement;
 	let game: Game;
@@ -47,19 +52,32 @@
 			showBanner = false;
 		}, 3000 + 500);
 
+		const session = await fetch(`//${BACKEND_HOST}/api/user-session`, {
+			method: 'POST',
+			credentials: 'include'
+		}).then<UserSession>((res) => {
+			return res.json();
+		});
+
 		const websocketProtocol = location.protocol === 'https:' ? 'wss' : 'ws';
 
 		const conn = await neffos.dial(
 			`${websocketProtocol}://${BACKEND_HOST}/api/ws`,
 			{
 				default: {
-					_OnNamespaceConnected: (nsConn: any, msg: any) => {
-						console.log('connected to namespace: ', msg.Namespace, msg);
+					[neffos.OnNamespaceConnected]: (nsConn, msg) => {
+						console.log('connected to namespace: ', nsConn, msg);
 					},
-					_OnNamespaceDisconnect: (nsConn: any, msg: any) => {
+					[neffos.OnNamespaceDisconnect]: (nsConn, msg) => {
 						console.log('disconnected from namespace: ', msg.Namespace, msg);
 					},
-					'active-users': (nsConn: any, msg: any) => {
+					[neffos.OnRoomJoin]: (nsConn, msg) => {
+						console.log('joined room: ', msg.Room, msg);
+					},
+					[neffos.OnRoomLeave]: (nsConn, msg) => {
+						console.log('left room: ', msg.Room, msg);
+					},
+					'active-users': (nsConn, msg) => {
 						const number = parseInt(msg.Body);
 
 						if (isNaN(number)) {
@@ -69,12 +87,6 @@
 
 						activeUsersCount = number;
 					}
-					// chat: function (nsConn, msg) {
-					// 	// "chat" event.
-					// 	// addMessage(msg.Body);
-
-					// 	console.log('chat', msg.Body);
-					// }
 				}
 			},
 			{
@@ -87,7 +99,6 @@
 
 		conn.connect('default').then((nsConn) => {
 			nsConn.ask('active-users', '').then((res) => {
-				// console.log('active-users', res.Body);
 				const number = parseInt(res.Body);
 
 				if (isNaN(number)) {
@@ -96,6 +107,11 @@
 				}
 
 				activeUsersCount = number;
+			});
+
+			nsConn.ask('poll-game', '').then((res) => {
+				const parsed = JSON.parse(res.Body) as PollGameResponse;
+				nsConn.joinRoom(parsed.RoomID);
 			});
 		});
 

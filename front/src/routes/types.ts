@@ -1,47 +1,11 @@
-export enum CellColor {
-	White = 'white',
-	Black = 'black',
-	Unoccupied = 'unoccupied'
-}
-
-export enum GameStyle {
-	Long = 'long'
-}
-
-export enum TurnError {
-	SourceCellIsOutOfBoard = 'Source cell is out of board',
-	TargetCellIsOutOfBoard = 'Target cell is out of board',
-	SourceCellIsOccupiedByOpponent = 'Source cell is occupied by opponent',
-	SourceCellIsEmpty = 'Source cell is empty',
-	TargetCellIsOccupiedByOpponent = 'Target cell is occupied by opponent',
-	UnknownError = 'Unknown error',
-	WrongTurn = 'Wrong turn',
-	DoubleTossIsNotAllowed = 'Double toss is not allowed',
-	NoCheckerAtSpecifiedIndex = 'No checker at specified index',
-	InvalidPlayerMove = 'Invalid player move',
-	DoubleHeadMoveOnNonFirstTurn = 'Double head move on non first turn'
-}
-
-export enum MoveResult {
-	HasNextMove,
-	TurnIsOver,
-	GameIsOver
-}
-
-export type GameField = {
-	cells: {
-		color: CellColor;
-		count: number;
-	}[];
-	gameStyle: GameStyle;
-	turn: CellColor;
-	tossed?: number[];
-	turnCount?: number;
-	turnMoves?: [number, number][];
+export type UserSession = {
+	CreatedAt: string | null;
+	DeletedAt: string | null;
+	ID: number;
+	UpdatedAt: string | null;
+	UserName: string;
 };
 
-export type CheckersMap = Record<number, Konva.Group[]>;
-
-export type UiCallbacks = {
-	startTurn: (color: CellColor) => void;
+export type PollGameResponse = {
+	RoomID: string;
 };
