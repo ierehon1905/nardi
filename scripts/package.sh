@@ -7,5 +7,3 @@ cp -r front/package-dist app-dist/front
 cp -r backend/package-dist app-dist/backend
 cp package.json app-dist
 cp app-runner.cjs app-dist
-mkdir app-dist/scripts
-cp scripts/clean-ports.sh app-dist/scripts/
