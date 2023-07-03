@@ -150,7 +150,7 @@
 
 <h1>Nardi</h1>
 
-<div class="row">
+<div class="row center">
 	<div>
 		<div class="board-container">
 			<div bind:this={board} />
@@ -193,6 +193,11 @@
 		flex-direction: row;
 
 		gap: 1rem;
+
+		&.center {
+			gap: unset;
+			justify-content: center;
+		}
 	}
 
 	.board-container {
