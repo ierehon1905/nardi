@@ -1,0 +1,83 @@
+body {
+	--color-background: #f5f5f5;
+	--color-base: #c6c6c6;
+	--color-border: #898989;
+
+	--color-text-primary: #121212;
+	--color-text-accent: #007bff;
+	--color-text-error: #dc3545;
+	--color-text-success: #28a745;
+	--color-text-warning: #ffc107;
+	--color-text-info: #17a2b8;
+
+	background-color: var(--color-background);
+	color: var(--color-text-primary);
+	font-family: 'Roboto', sans-serif;
+	font-size: 16px;
+	margin: 0;
+	padding: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+	body {
+		--color-background: #121212;
+		--color-base: #1f1f1f;
+		--color-border: #898989;
+
+		--color-text-primary: #f5f5f5;
+		--color-text-accent: #007bff;
+		--color-text-error: #dc3545;
+		--color-text-success: #28a745;
+		--color-text-warning: #ffc107;
+		--color-text-info: #17a2b8;
+	}
+}
+
+@mixin defaultBorder {
+	border: 1px solid var(--color-border);
+	border-radius: 0.25rem;
+}
+
+button {
+	@include defaultBorder;
+	background-color: var(--color-base);
+	color: inherit;
+	font-size: inherit;
+	padding: 0.5rem 1rem;
+	transition: background-color 50ms ease-out;
+}
+
+button:active {
+	background-color: var(--color-border);
+	scale: 0.95;
+}
+
+input {
+	@include defaultBorder;
+	background-color: var(--color-base);
+	color: inherit;
+	font-size: inherit;
+	padding: 0.5rem 1rem;
+	transition: background-color 50ms ease-out;
+}
+
+a {
+	color: var(--color-text-accent);
+	text-decoration: none;
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+	margin: 0;
+}

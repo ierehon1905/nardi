@@ -3,13 +3,18 @@
 </script>
 
 <script lang="ts">
-	import { BACKEND_HOST, DEBUG } from '$lib/constants';
+	import { DEBUG } from '$lib/constants';
+	import { createClient } from '@supabase/supabase-js';
+
 	import { onMount, onDestroy } from 'svelte';
 	import './utils';
 
 	import { runGame, type Game } from '$lib/engine/game';
 	import type { CellColor, GameField, TurnError, UiCallbacks } from '../lib/engine/types';
-	import type { PollGameResponse, UserSession } from './types';
+	import type { PollGameResponse, UserSession } from '../lib/api/types';
+	import { client } from '$lib/supabase';
+	import Flex from '$lib/components/Flex.svelte';
+	import Text from '$lib/components/Text.svelte';
 
 	let board: HTMLDivElement;
 	let game: Game;
@@ -19,7 +24,6 @@
 	let error = null as TurnError | null;
 	let turn = null as CellColor | null;
 	let showBanner = false;
-	let connection: neffos.Conn | null = null;
 	let activeUsersCount = 0;
 
 	function startTurnHandler(color: CellColor) {
@@ -52,81 +56,32 @@
 			showBanner = false;
 		}, 3000 + 500);
 
-		const session = await fetch(`//${BACKEND_HOST}/api/user-session`, {
-			method: 'POST',
-			credentials: 'include'
-		}).then<UserSession>((res) => {
-			return res.json();
-		});
+		// const gameChannel = client.channel('game', {
+		// 	config: {
+		// 		broadcast: {
+		// 			ack: true,
+		// 			self: false
+		// 		}
+		// 	}
+		// });
 
-		const websocketProtocol = location.protocol === 'https:' ? 'wss' : 'ws';
+		// gameChannel.on('broadcast', { event: 'test' }, (data) => {
+		// 	console.log('on broadcast test', data);
+		// });
 
-		const conn = await neffos.dial(
-			`${websocketProtocol}://${BACKEND_HOST}/api/ws`,
-			{
-				default: {
-					[neffos.OnNamespaceConnected]: (nsConn, msg) => {
-						console.log('connected to namespace: ', nsConn, msg);
-					},
-					[neffos.OnNamespaceDisconnect]: (nsConn, msg) => {
-						console.log('disconnected from namespace: ', msg.Namespace, msg);
-					},
-					[neffos.OnRoomJoin]: (nsConn, msg) => {
-						console.log('joined room: ', msg.Room, msg);
-					},
-					[neffos.OnRoomLeave]: (nsConn, msg) => {
-						console.log('left room: ', msg.Room, msg);
-					},
-					'active-users': (nsConn, msg) => {
-						const number = parseInt(msg.Body);
-
-						if (isNaN(number)) {
-							console.error('active-users: invalid number', msg.Body);
-							return;
-						}
-
-						activeUsersCount = number;
-					}
-				}
-			},
-			{
-				reconnect: 5000,
-				headers: {
-					'X-Username': 'leon'
-				}
-			}
-		);
-
-		conn.connect('default').then((nsConn) => {
-			nsConn.ask('active-users', '').then((res) => {
-				const number = parseInt(res.Body);
-
-				if (isNaN(number)) {
-					console.error('active-users: invalid number', res.Body);
-					return;
-				}
-
-				activeUsersCount = number;
-			});
-
-			nsConn.ask('poll-game', '').then((res) => {
-				const parsed = JSON.parse(res.Body) as PollGameResponse;
-				nsConn.joinRoom(parsed.RoomID);
-			});
-		});
-
-		connection = conn;
-
-		fetch(`//${BACKEND_HOST}/api/ping`);
+		// gameChannel.subscribe((data) => {
+		// 	console.log('subscribe test', data);
+		// 	if (data === 'SUBSCRIBED') {
+		// 		gameChannel.send({
+		// 			type: 'broadcast',
+		// 			event: 'test',
+		// 			payload: 'test'
+		// 		});
+		// 	}
+		// });
 	});
 
-	onDestroy(() => {
-		if (connection) {
-			console.log('close connection');
-
-			connection.close();
-		}
-	});
+	onDestroy(() => {});
 
 	function toss() {
 		if (!game) {
@@ -146,9 +101,33 @@
 
 		console.log('toss', tossedValues);
 	}
+
+	let userEmail = 'Loading...';
+	let anonymousUserId: string | undefined = undefined;
+
+	onMount(async () => {
+		const res = await client.auth.getUser();
+
+		if (res.error) {
+			userEmail = 'Anonymous';
+			anonymousUserId = crypto.randomUUID();
+			return;
+		}
+
+		userEmail = res.data.user?.email || 'Not logged in';
+	});
+
+	function findGame() {
+		// const res = client.realtime.channel('');
+	}
 </script>
 
-<h1>Nardi</h1>
+<Flex direction="row" justify="space-between">
+	<h1>Nardi</h1>
+	<Text>
+		{userEmail}
+	</Text>
+</Flex>
 
 <div class="row center">
 	<div>
@@ -161,14 +140,14 @@
 		{#if turn}
 			<div>turn: {turn}</div>
 		{/if}
-		<div class="row">
+		<Flex direction="row">
 			<button on:click={toss}>toss</button>
 			{#if tossedValues}
 				{#each tossedValues as value}
 					<div class="dice">{value}</div>
 				{/each}
 			{/if}
-		</div>
+		</Flex>
 		{#if error}
 			<div>{error}</div>
 		{/if}
@@ -182,9 +161,10 @@
 			</pre>
 		</code>
 	{/if}
-	<div>
+	<Flex>
 		<div>active users: {activeUsersCount}</div>
-	</div>
+		<button on:click={findGame}>Find game</button>
+	</Flex>
 </div>
 
 <style>

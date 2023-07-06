@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/glebarez/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -24,12 +24,15 @@ type UserSession struct {
 var DB *gorm.DB
 
 func RunDb() {
-	db, err := gorm.Open(sqlite.Open("gorm.db"), &gorm.Config{})
+	dsn := os.Getenv("DATABASE_URL")
+
+	if dsn == "" {
+		dsn = "host=localhost user=postgres password=postgres dbname=nardy port=5432 sslmode=disable TimeZone=Europe/Moscow"
+	}
+
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
-		// fmt.Println(err)
-
-		// print to stderr in iris
 		os.Stderr.WriteString(fmt.Sprintf("failed to connect database: %s\n", err.Error()))
 		panic("failed to connect database")
 	}
@@ -38,4 +41,6 @@ func RunDb() {
 	db.AutoMigrate(&UserSession{})
 
 	DB = db
+
+	fmt.Println("DB connected")
 }

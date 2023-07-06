@@ -1,4 +1,4 @@
-export type UserSession = {
+export type GetSessionResponse = {
 	CreatedAt: string | null;
 	DeletedAt: string | null;
 	ID: number;

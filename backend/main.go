@@ -6,20 +6,7 @@ import (
 )
 
 func main() {
-
 	RunServer()
-	// fmt.Println("Hello World")
-
-	// field := initField()
-
-	// field.printField()
-
-	// field.moveCheckerByDice(11, 15)
-	// field.moveCheckerByDice(23, 15)
-
-	// field.printField()
-
-	// fmt.Println(field)
 }
 
 type GameField struct {
