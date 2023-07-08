@@ -1,12 +1,15 @@
 package src
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"time"
 
+	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/websocket"
 	"github.com/kataras/neffos"
+	"gorm.io/gorm"
 )
 
 var activeUsersCount = 0
@@ -61,6 +64,45 @@ var WebsocketServer = neffos.New(websocket.DefaultGobwasUpgrader, neffos.Namespa
 		websocket.OnRoomJoined: func(nsConn *websocket.NSConn, msg websocket.Message) error {
 			log.Printf("[%s] joined to room [%s]", nsConn, msg.Room)
 
+			ctx := websocket.GetContext(nsConn.Conn)
+
+			session := sess.Start(ctx)
+
+			userId := session.ID()
+
+			gameSessionId := msg.Room
+
+			// find if gameSessionId exists with userId
+
+			var gameSession GameSession
+			res := DB.Where("id = ?", gameSessionId).Where("black_player_id = ?", userId).First(&gameSession)
+
+			if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+				fmt.Println("gameSession not found")
+
+				return nil
+			}
+
+			// wait 500ms in goroutine
+
+			go func() {
+				time.Sleep(1000 * time.Millisecond)
+
+				// return neffos.Reply(neffos.Marshal(
+				// 	iris.Map{
+				// 		"message": "game-start",
+				// 	},
+				// ))
+
+				nsConn.Room(msg.Room).Emit("game-start",
+					neffos.Marshal(
+						iris.Map{
+							"message": "game-start",
+						},
+					),
+				)
+			}()
+
 			return nil
 		},
 		websocket.OnRoomLeft: func(nsConn *websocket.NSConn, msg websocket.Message) error {
@@ -91,6 +133,62 @@ var WebsocketServer = neffos.New(websocket.DefaultGobwasUpgrader, neffos.Namespa
 			return neffos.Reply(neffos.Marshal(pollGameResponse{
 				RoomID: RoomID,
 			}))
+		},
+		"game-start": func(nsConn *websocket.NSConn, msg websocket.Message) error {
+
+			// gameType get from type field in msg.Body as json
+			type gameStartRequest struct {
+				Type       string `json:"type"`
+				Difficulty string `json:"difficulty"`
+			}
+
+			var gameStartRequestData gameStartRequest
+
+			err := neffos.DefaultUnmarshaler(msg.Body, &gameStartRequestData)
+
+			if err != nil {
+				return err
+			}
+
+			// generate random RoomID
+			// RoomID := "RoomID" + fmt.Sprintf("%d", time.Now().UnixNano())
+
+			type gameStartResponse struct {
+				RoomID string `json:"RoomID"`
+			}
+
+			// create game session
+
+			// get cookie
+
+			ctx := websocket.GetContext(nsConn.Conn)
+
+			session := sess.Start(ctx)
+
+			gameSession := GameSession{
+				BlackPlayerId: session.ID(),
+				WhitePlayerId: "__BOT__",
+				WithBot:       true,
+			}
+
+			// save game session in gorm
+
+			result := DB.Create(&gameSession)
+
+			if result.Error != nil {
+				return result.Error
+			}
+
+			// get session id
+
+			sessionId := gameSession.ID
+
+			return neffos.Reply(neffos.Marshal(
+				iris.Map{
+					"success":   true,
+					"sessionId": sessionId,
+				},
+			))
 		},
 	},
 })

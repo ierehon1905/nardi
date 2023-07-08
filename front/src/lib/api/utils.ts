@@ -18,7 +18,8 @@ type Api<T> = {
 		: unknown;
 };
 
-const cleanBackendHost = BACKEND_HOST.endsWith('/') ? BACKEND_HOST.slice(0, -1) : BACKEND_HOST;
+const protocol = new URL(BACKEND_HOST).protocol;
+const cleanBackendHost = new URL(BACKEND_HOST).host;
 
 export function buildApi<T extends { [key: string]: ApiDefinition<any, any> }>(
 	apiSchema: T
@@ -28,7 +29,7 @@ export function buildApi<T extends { [key: string]: ApiDefinition<any, any> }>(
 		acc[key] = (params?: any) => {
 			const compiledPath = path(params);
 
-			const url = `${cleanBackendHost}${compiledPath}`;
+			const url = `${protocol}//${cleanBackendHost}${compiledPath}`;
 
 			const compiledBody = body ? body(params) : undefined;
 			const rawBody = compiledBody ? JSON.stringify(compiledBody) : undefined;

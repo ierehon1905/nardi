@@ -33,9 +33,13 @@ func RunServer() {
 	{
 		api.Get("/ping", pingHandler)
 		api.Post("/user-session", createUserSessionHandler)
-		api.Get("/game/:id", getGameHandler)
-		// app.Get("/login", loginHandler)
-		app.Get("/logout", logoutHandler)
+		api.Get("/logout", logoutHandler)
+	}
+
+	game := api.Party("/game")
+	{
+		game.Get("/", getGamesHandler)
+		game.Get("/:id", getGameHandler)
 	}
 
 	app.Listen(":8080")
@@ -92,6 +96,65 @@ func getGameHandler(ctx iris.Context) {
 	}
 
 	ctx.JSON(game)
+}
+
+func getGamesHandler(ctx iris.Context) {
+	page, pageSize, err := getPaginationParams(ctx)
+
+	if err != nil {
+		return
+	}
+
+	var games []GameSession
+	var totalOfAllGames int64
+	// limit 100
+	result := DB.Model(&GameSession{}).Count(
+		&totalOfAllGames,
+	).Offset(
+		(page - 1) * pageSize,
+	).Limit(pageSize).Find(&games)
+	DB.Count(&totalOfAllGames)
+
+	if result.Error != nil {
+		ctx.StatusCode(500)
+		ctx.JSON(iris.Map{"message": "internal server error"})
+		return
+	}
+
+	// ctx.JSON(games)
+	// return a json with fields "items", "total", "page", "pageCount"
+	ctx.JSON(iris.Map{
+		"items": games,
+		"total": totalOfAllGames,
+		"page":  page,
+		"pages": totalOfAllGames / int64(pageSize),
+	})
+}
+
+func getPaginationParams(ctx iris.Context) (int, int, error) {
+	page := ctx.URLParamIntDefault("page", 1)
+	pageSize := ctx.URLParamIntDefault("pageSize", 100)
+	var err error = nil
+
+	if page < 1 {
+		ctx.StatusCode(400)
+		ctx.JSON(iris.Map{"message": "page must be greater than 0"})
+		err = errors.New("page must be greater than 0")
+	}
+
+	if pageSize < 1 {
+		ctx.StatusCode(400)
+		ctx.JSON(iris.Map{"message": "pageSize must be greater than 0"})
+		err = errors.New("pageSize must be greater than 0")
+	}
+
+	if pageSize > 1000 {
+		ctx.StatusCode(400)
+		ctx.JSON(iris.Map{"message": "pageSize must be less than 1000"})
+		err = errors.New("pageSize must be less than 1000")
+	}
+
+	return page, pageSize, err
 }
 
 type CreateUserSessionRequest struct {

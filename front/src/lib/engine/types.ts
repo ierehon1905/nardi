@@ -1,3 +1,5 @@
+import type Konva from 'konva';
+
 export enum CellColor {
 	White = 'white',
 	Black = 'black',

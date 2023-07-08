@@ -14,6 +14,10 @@ const apiSchema = {
 		path: ({ id }) => `/api/game/${id}`,
 		method: 'GET'
 	}),
+	getGames: createAction<any, undefined>({
+		path: () => '/api/game',
+		method: 'GET'
+	}),
 	logout: createAction({
 		path: () => '/api/logout',
 		method: 'GET'

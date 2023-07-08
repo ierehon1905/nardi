@@ -11,8 +11,9 @@ import (
 type GameSession struct {
 	gorm.Model
 	Field         GameField `gorm:"serializer:json"`
-	BlackPlayerId uint
-	WhitePlayerId uint
+	BlackPlayerId string
+	WhitePlayerId string
+	WithBot       bool
 }
 
 type UserSession struct {

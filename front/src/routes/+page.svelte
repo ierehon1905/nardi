@@ -4,7 +4,6 @@
 
 <script lang="ts">
 	import { DEBUG } from '$lib/constants';
-	import { createClient } from '@supabase/supabase-js';
 
 	import { onMount, onDestroy } from 'svelte';
 	import './utils';

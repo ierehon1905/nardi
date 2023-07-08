@@ -1,12 +1,4 @@
-import type * as _neffos from 'neffos.js';
-
-declare global {
-	const neffos: neffos;
-}
-
-export as namespace neffos;
-
-export * from 'neffos.js';
+import 'neffos.js';
 
 declare module 'neffos.js' {
 	export type ConnHandler = {

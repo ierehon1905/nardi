@@ -9,6 +9,7 @@ import {
 	type CheckersMap,
 	type GameField
 } from './types';
+import Konva from 'konva';
 
 const colors = {
 	brown: '#8B4513',
