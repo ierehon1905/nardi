@@ -1,5 +1,6 @@
 import { browser } from '$app/environment';
 import { BACKEND_HOST } from '$lib/constants';
+
 import * as neffos from 'neffos.js';
 import { setClient } from './client';
 

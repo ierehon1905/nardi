@@ -1,5 +1,12 @@
 <script>
+	import { onMount } from 'svelte';
 	import './styles.scss';
+
+	onMount(async () => {
+		const mod = await import('$lib/neffos/connection');
+
+		mod.initConnection();
+	});
 </script>
 
 <svelte:head>

@@ -163,7 +163,7 @@
 	</Flex>
 </div>
 
-<style>
+<style lang="scss">
 	.row {
 		display: flex;
 		flex-direction: row;
