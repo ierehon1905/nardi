@@ -1,0 +1,7 @@
+{
+	"title.login": "Войти",
+	"title.register": "Зарегистрироваться",
+	"do_not_have_account": "Еще нет аккаунта? <a href=\"/register\">Зарегистрироваться</a>",
+	"have_account": "Уже есть аккаунт? <a href=\"/login\">Войти</a>",
+	"password": "Пароль"
+}

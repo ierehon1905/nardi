@@ -2,6 +2,7 @@
 	import { api } from '$lib/api';
 	import Flex from '$lib/components/Flex.svelte';
 	import Text from '$lib/components/Text.svelte';
+	import { onMount } from 'svelte';
 
 	let error: string | null = null;
 
@@ -12,6 +13,11 @@
 	async function findGame() {}
 
 	async function getMyGames() {}
+
+	onMount(() => {
+		// @ts-ignore
+		window.api = api;
+	});
 </script>
 
 <Flex>

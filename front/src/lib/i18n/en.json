@@ -1,0 +1,7 @@
+{
+	"title.login": "Login",
+	"title.register": "Register",
+	"do_not_have_account": "Do not have an account? <a href=\"/register\">Register</a>",
+	"have_account": "Already have an account? <a href=\"/login\">Login</a>",
+	"password": "Password"
+}

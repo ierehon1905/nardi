@@ -1,9 +1,9 @@
 import { BACKEND_HOST } from '$lib/constants';
 
 type ApiDefinition<ApiResponse, ApiRequest> = {
-	path: string;
+	path: (params: ApiRequest) => string;
 	method: 'GET' | 'POST' | 'PUT' | 'DELETE';
-	body?: any;
+	body?: (params: ApiRequest) => object;
 };
 
 export function createAction<ApiResponse = undefined, ApiRequest = undefined>(
@@ -24,15 +24,26 @@ export function buildApi<T extends { [key: string]: ApiDefinition<any, any> }>(
 	apiSchema: T
 ): Api<T> {
 	return Object.keys(apiSchema).reduce((acc, key) => {
-		const { path, method } = apiSchema[key as keyof typeof apiSchema];
-		acc[key] = (body?: any) => {
-			console.log('fetching', path, method, body);
-			const url = `${cleanBackendHost}${path}`;
+		const { path, method, body } = apiSchema[key as keyof typeof apiSchema];
+		acc[key] = (params?: any) => {
+			const compiledPath = path(params);
+
+			const url = `${cleanBackendHost}${compiledPath}`;
+
+			const compiledBody = body ? body(params) : undefined;
+			const rawBody = compiledBody ? JSON.stringify(compiledBody) : undefined;
+
 			return fetch(url, {
 				method,
-				body: body ? JSON.stringify(body) : undefined,
+				body: rawBody,
 				credentials: 'include'
-			}).then((res) => res.json());
+			}).then((res) => {
+				const contentType = res.headers.get('content-type');
+				if (contentType && contentType.includes('application/json')) {
+					return res.json();
+				}
+				return res.text();
+			});
 		};
 		return acc;
 	}, {} as any) as Api<T>;

@@ -11,8 +11,7 @@
 
 	import { runGame, type Game } from '$lib/engine/game';
 	import type { CellColor, GameField, TurnError, UiCallbacks } from '../lib/engine/types';
-	import type { PollGameResponse, UserSession } from '../lib/api/types';
-	import { client } from '$lib/supabase';
+	// import type { PollGameResponse, UserSession } from '../lib/api/types';
 	import Flex from '$lib/components/Flex.svelte';
 	import Text from '$lib/components/Text.svelte';
 
@@ -106,15 +105,13 @@
 	let anonymousUserId: string | undefined = undefined;
 
 	onMount(async () => {
-		const res = await client.auth.getUser();
-
-		if (res.error) {
-			userEmail = 'Anonymous';
-			anonymousUserId = crypto.randomUUID();
-			return;
-		}
-
-		userEmail = res.data.user?.email || 'Not logged in';
+		// const res = await client.auth.getUser();
+		// if (res.error) {
+		// 	userEmail = 'Anonymous';
+		// 	anonymousUserId = crypto.randomUUID();
+		// 	return;
+		// }
+		// userEmail = res.data.user?.email || 'Not logged in';
 	});
 
 	function findGame() {

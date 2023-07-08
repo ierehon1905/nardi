@@ -3,8 +3,20 @@ import { createAction, buildApi } from './utils';
 
 const apiSchema = {
 	getSession: createAction<GetSessionResponse, undefined | { name?: string }>({
-		path: '/api/user-session',
+		path: () => '/api/user-session',
 		method: 'POST'
+	}),
+	ping: createAction({
+		path: () => '/api/ping',
+		method: 'GET'
+	}),
+	getGame: createAction<any, { id: string }>({
+		path: ({ id }) => `/api/game/${id}`,
+		method: 'GET'
+	}),
+	logout: createAction({
+		path: () => '/api/logout',
+		method: 'GET'
 	})
 };
 

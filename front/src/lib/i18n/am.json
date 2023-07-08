@@ -1,0 +1,7 @@
+{
+	"title.login": "Մուտք",
+	"title.register": "Գրանցվել",
+	"do_not_have_account": "Չունե՞ք հաշիվ: <a href=\"/register\">Գրանցվել</a>",
+	"have_account": "Արդեն ունե՞ք հաշիվ: <a href=\"/login\">Մուտք</a>",
+	"password": "Գաղտնաբառ"
+}
