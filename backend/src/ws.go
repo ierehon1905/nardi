@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math/rand"
 	"time"
 
 	"github.com/kataras/iris/v12"
@@ -85,23 +86,25 @@ var WebsocketServer = neffos.New(websocket.DefaultGobwasUpgrader, neffos.Namespa
 
 			// wait 500ms in goroutine
 
-			go func() {
-				time.Sleep(1000 * time.Millisecond)
+			// go func() {
+			// 	time.Sleep(1000 * time.Millisecond)
 
-				// return neffos.Reply(neffos.Marshal(
-				// 	iris.Map{
-				// 		"message": "game-start",
-				// 	},
-				// ))
+			// 	// return neffos.Reply(neffos.Marshal(
+			// 	// 	iris.Map{
+			// 	// 		"message": "game-start",
+			// 	// 	},
+			// 	// ))
 
-				nsConn.Room(msg.Room).Emit("game-start",
-					neffos.Marshal(
-						iris.Map{
-							"message": "game-start",
-						},
-					),
-				)
-			}()
+			// 	nsConn.Room(msg.Room).Emit("game-start",
+			// 		neffos.Marshal(
+			// 			iris.Map{
+			// 				"message": "game-start",
+			// 			},
+			// 		),
+			// 	)
+			// }()
+
+			go runGameInRoom(*nsConn.Room(msg.Room))
 
 			return nil
 		},
@@ -115,8 +118,91 @@ var WebsocketServer = neffos.New(websocket.DefaultGobwasUpgrader, neffos.Namespa
 			return neffos.Reply([]byte(fmt.Sprintf("%d", activeUsersCount)))
 		},
 		"game-move": func(nsConn *websocket.NSConn, msg websocket.Message) error {
+			context := websocket.GetContext(nsConn.Conn)
+			session := sess.Start(context)
 
-			return nil
+			type GameMove struct {
+				Moves [][]int `json:"moves"`
+				Room  string  `json:"room"`
+			}
+
+			var gameMove GameMove
+
+			err := msg.Unmarshal(&gameMove)
+
+			if err != nil {
+				fmt.Println(err)
+				return neffos.Reply(neffos.Marshal(
+					iris.Map{
+						"error": "invalid-message",
+					},
+				))
+			}
+
+			userId := session.ID()
+
+			var gameSession GameSession
+			res := DB.Where("id = ?", gameMove.Room).Where("black_player_id = ?", userId).First(&gameSession)
+
+			if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+				fmt.Println("gameSession not found")
+
+				return neffos.Reply(neffos.Marshal(
+					iris.Map{
+						"error": "game-session-not-found",
+					},
+				))
+			}
+
+			go func() {
+				time.Sleep(1000 * time.Millisecond)
+
+				botMovements := [][]int{
+					{1, 2},
+					{1, 2},
+				}
+
+				nsConn.Room(gameMove.Room).Emit("game-move",
+					neffos.Marshal(
+						iris.Map{
+							"message": "game-move",
+							"moves":   botMovements,
+						},
+					),
+				)
+			}()
+
+			if rand.Intn(4) == 0 {
+				// finish game
+				didPlayerWin := rand.Intn(2) == 1
+
+				var winnerId string
+				if didPlayerWin {
+					ctx := websocket.GetContext(nsConn.Conn)
+
+					session := sess.Start(ctx)
+
+					winnerId = session.ID()
+				} else {
+					winnerId = "__BOT__"
+				}
+
+				nsConn.Room(gameMove.Room).Emit("game-end",
+					neffos.Marshal(
+						iris.Map{
+							"message": "game-end",
+							"winner":  winnerId,
+						},
+					),
+				)
+
+			}
+
+			return neffos.Reply(neffos.Marshal(
+				iris.Map{
+					"message": "ok",
+				},
+			))
 		},
 		"poll-game": func(nsConn *websocket.NSConn, msg websocket.Message) error {
 
@@ -192,3 +278,59 @@ var WebsocketServer = neffos.New(websocket.DefaultGobwasUpgrader, neffos.Namespa
 		},
 	},
 })
+
+func runGameInRoom(room neffos.Room) {
+	time.Sleep(1000 * time.Millisecond)
+
+	// firrst turn
+
+	ctx := websocket.GetContext(room.NSConn.Conn)
+
+	session := sess.Start(ctx)
+
+	playerId := session.ID()
+	botId := "__BOT__"
+
+	var playerTurn string
+
+	if rand.Intn(2) == 1 {
+		playerTurn = playerId
+	} else {
+		playerTurn = botId
+	}
+
+	dice1, dice2 := tossTwoDice()
+	room.Emit("game-start",
+		neffos.Marshal(
+			iris.Map{
+				"message":   "game-start",
+				"firstTurn": playerTurn,
+				"tossed":    []int{dice1, dice2},
+			},
+		),
+	)
+
+	// time.Sleep(1000 * time.Millisecond)
+	// // random
+	// didPlayerWin := rand.Intn(2) == 1
+
+	// var winnerId string
+	// if didPlayerWin {
+	// 	ctx := websocket.GetContext(room.NSConn.Conn)
+
+	// 	session := sess.Start(ctx)
+
+	// 	winnerId = session.ID()
+	// } else {
+	// 	winnerId = "__BOT__"
+	// }
+
+	// room.Emit("game-end",
+	// 	neffos.Marshal(
+	// 		iris.Map{
+	// 			"message": "game-end",
+	// 			"winner":  winnerId,
+	// 		},
+	// 	),
+	// )
+}

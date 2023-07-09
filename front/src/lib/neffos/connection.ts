@@ -1,6 +1,8 @@
 import { browser } from '$app/environment';
 import { BACKEND_HOST } from '$lib/constants';
 
+import { writable, get } from 'svelte/store';
+
 import * as neffos from 'neffos.js';
 import { setClient } from './client';
 
@@ -30,7 +32,40 @@ export async function initConnection() {
 					console.log(`Received OnNamespaceConnected`, ns.namespace, msg.Body);
 				},
 				'game-start': (ns, msg) => {
-					console.log(`Received game-start`, ns.namespace, msg.Body);
+					const room = msg.Room;
+
+					if (get(gameState).room !== room) {
+						console.warn(
+							`Received game-start for room ${room} but current room is ${get(gameState).room}`
+						);
+						return;
+					}
+
+					gameState.update((state) => ({
+						...state,
+						room,
+						phase: 'in-progress'
+					}));
+				},
+				'game-move': (ns, msg) => {
+					const room = msg.Room;
+					console.log('game-move', JSON.parse(msg.Body));
+				},
+				'game-end': (ns, msg) => {
+					const room = msg.Room;
+
+					if (get(gameState).room !== room) {
+						console.warn(
+							`Received game-end for room ${room} but current room is ${get(gameState).room}`
+						);
+						return;
+					}
+
+					gameState.update((state) => ({
+						...state,
+						room,
+						phase: 'finished'
+					}));
 				}
 			}
 		},
@@ -43,3 +78,12 @@ export async function initConnection() {
 
 	setClient(client);
 }
+
+type GamePhase = 'none' | 'waiting-start' | 'in-progress' | 'finished';
+
+type GameState = {
+	room?: string;
+	phase?: GamePhase;
+};
+
+export const gameState = writable({} as GameState);
