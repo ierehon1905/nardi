@@ -11,7 +11,15 @@
 
 <svelte:head>
 	<title>Nardy</title>
-	<meta name="description" content="Nardy game" />
+	<meta
+		name="description"
+		content="Nardy game, play backgammon online with friends or random people and bots. Play on mobile or desktop"
+	/>
+	<meta
+		name="keywords"
+		content="nardy, backgammon, online, game, play, longgammon, nardi, gammon"
+	/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 	<meta property="og:title" content="Nardy" />
 	<meta property="og:description" content="Nardy game" />
