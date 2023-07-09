@@ -3,6 +3,7 @@ package src
 import (
 	"errors"
 	"fmt"
+	"net/http"
 
 	"github.com/iris-contrib/middleware/cors"
 	"github.com/kataras/iris/v12"
@@ -22,10 +23,28 @@ func RunServer() {
 
 	app := iris.New()
 	crs := cors.New(cors.Options{
-		AllowedOrigins:   []string{"*"},
+		AllowedOrigins: []string{
+			"http://localhost:5173",
+			"https://nardy.am",
+			"https://www.nardy.am",
+			"https://nardy.am:5173",
+			"http://nardy-web.local:5173",
+			"http://nardy.local:5173",
+			"http://api.nardy.local:5173",
+			"https://api.nardy.am",
+		},
 		AllowCredentials: true,
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedHeaders:   []string{"Content-Type", "*"},
+		Debug:            true,
 	})
 	app.UseRouter(crs)
+
+	app.Use(sess.Handler(
+		iris.CookieSecure,
+		iris.CookieHTTPOnly(false),
+		iris.CookieSameSite(http.SameSiteLaxMode),
+	))
 
 	app.Get("/api/ws", websocket.Handler(WebsocketServer))
 
@@ -179,7 +198,7 @@ func createUserSessionHandler(ctx iris.Context) {
 		name = createUserSessionRequest.Name
 	}
 
-	session := sess.Start(ctx)
+	session := sessions.Get(ctx)
 
 	if auth, _ := session.GetBoolean("authenticated"); auth {
 		existingSession := UserSession{}

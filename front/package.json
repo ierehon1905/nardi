@@ -24,6 +24,7 @@
 		"@sveltejs/adapter-cloudflare": "^2.3.0",
 		"@sveltejs/adapter-node": "^1.2.4",
 		"@sveltejs/kit": "^1.20.4",
+		"@types/js-cookie": "^3.0.3",
 		"@types/node": "^18.16.18",
 		"@typescript-eslint/eslint-plugin": "^5.45.0",
 		"@typescript-eslint/parser": "^5.45.0",
@@ -42,8 +43,9 @@
 	"type": "module",
 	"dependencies": {
 		"http-proxy-middleware": "^2.0.6",
-		"neffos.js": "^0.1.34",
+		"js-cookie": "^3.0.5",
 		"konva": "^9.2.0",
+		"neffos.js": "^0.1.34",
 		"ws": "^8.13.0"
 	}
 }

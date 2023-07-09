@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/kataras/iris/v12"
+	"github.com/kataras/iris/v12/sessions"
 	"github.com/kataras/iris/v12/websocket"
 	"github.com/kataras/neffos"
 	"gorm.io/gorm"
@@ -31,6 +32,7 @@ var WebsocketServer = neffos.New(websocket.DefaultGobwasUpgrader, neffos.Namespa
 		websocket.OnNamespaceConnected: func(nsConn *websocket.NSConn, msg websocket.Message) error {
 			// with `websocket.GetContext` you can retrieve the Iris' `Context`.
 			ctx := websocket.GetContext(nsConn.Conn)
+			session := sessions.Get(ctx)
 
 			log.Printf(
 				"[%s] connected to namespace [%s] with IP [%s]",
@@ -47,7 +49,19 @@ var WebsocketServer = neffos.New(websocket.DefaultGobwasUpgrader, neffos.Namespa
 				Body:      []byte(fmt.Sprintf("%d", activeUsersCount)),
 			})
 
-			return nil
+			nsConn.Emit("ack", neffos.Marshal(
+				iris.Map{
+					"message": "Hi, " + session.ID(),
+				},
+			))
+
+			return neffos.Reply(
+				neffos.Marshal(
+					iris.Map{
+						"message": "Hi, " + session.ID(),
+					},
+				),
+			)
 		},
 		websocket.OnNamespaceDisconnect: func(nsConn *websocket.NSConn, msg websocket.Message) error {
 			log.Printf("[%s] disconnected from namespace [%s]", nsConn, msg.Namespace)
@@ -67,7 +81,7 @@ var WebsocketServer = neffos.New(websocket.DefaultGobwasUpgrader, neffos.Namespa
 
 			ctx := websocket.GetContext(nsConn.Conn)
 
-			session := sess.Start(ctx)
+			session := sessions.Get(ctx)
 
 			userId := session.ID()
 
@@ -84,26 +98,6 @@ var WebsocketServer = neffos.New(websocket.DefaultGobwasUpgrader, neffos.Namespa
 				return nil
 			}
 
-			// wait 500ms in goroutine
-
-			// go func() {
-			// 	time.Sleep(1000 * time.Millisecond)
-
-			// 	// return neffos.Reply(neffos.Marshal(
-			// 	// 	iris.Map{
-			// 	// 		"message": "game-start",
-			// 	// 	},
-			// 	// ))
-
-			// 	nsConn.Room(msg.Room).Emit("game-start",
-			// 		neffos.Marshal(
-			// 			iris.Map{
-			// 				"message": "game-start",
-			// 			},
-			// 		),
-			// 	)
-			// }()
-
 			go runGameInRoom(*nsConn.Room(msg.Room))
 
 			return nil
@@ -118,8 +112,8 @@ var WebsocketServer = neffos.New(websocket.DefaultGobwasUpgrader, neffos.Namespa
 			return neffos.Reply([]byte(fmt.Sprintf("%d", activeUsersCount)))
 		},
 		"game-move": func(nsConn *websocket.NSConn, msg websocket.Message) error {
-			context := websocket.GetContext(nsConn.Conn)
-			session := sess.Start(context)
+			ctx := websocket.GetContext(nsConn.Conn)
+			session := sessions.Get(ctx)
 
 			type GameMove struct {
 				Moves [][]int `json:"moves"`
@@ -180,7 +174,7 @@ var WebsocketServer = neffos.New(websocket.DefaultGobwasUpgrader, neffos.Namespa
 				if didPlayerWin {
 					ctx := websocket.GetContext(nsConn.Conn)
 
-					session := sess.Start(ctx)
+					session := sessions.Get(ctx)
 
 					winnerId = session.ID()
 				} else {
@@ -249,7 +243,7 @@ var WebsocketServer = neffos.New(websocket.DefaultGobwasUpgrader, neffos.Namespa
 
 			ctx := websocket.GetContext(nsConn.Conn)
 
-			session := sess.Start(ctx)
+			session := sessions.Get(ctx)
 
 			gameSession := GameSession{
 				BlackPlayerId: session.ID(),
@@ -286,7 +280,7 @@ func runGameInRoom(room neffos.Room) {
 
 	ctx := websocket.GetContext(room.NSConn.Conn)
 
-	session := sess.Start(ctx)
+	session := sessions.Get(ctx)
 
 	playerId := session.ID()
 	botId := "__BOT__"
@@ -318,7 +312,7 @@ func runGameInRoom(room neffos.Room) {
 	// if didPlayerWin {
 	// 	ctx := websocket.GetContext(room.NSConn.Conn)
 
-	// 	session := sess.Start(ctx)
+	// session := sessions.Get(ctx)
 
 	// 	winnerId = session.ID()
 	// } else {

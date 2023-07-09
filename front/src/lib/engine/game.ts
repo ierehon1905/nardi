@@ -13,7 +13,6 @@ import {
 	type TurnError,
 	type UiCallbacks
 } from './types';
-import {} from '../../routes/+page.svelte';
 
 export type Game = {
 	moveBy: (sourceCellIndex: number, step: number, colorToMove: CellColor) => Promise<void>;

@@ -8,11 +8,11 @@
 	import { onMount, onDestroy } from 'svelte';
 	import './utils';
 
-	import { runGame, type Game } from '$lib/engine/game';
 	import type { CellColor, GameField, TurnError, UiCallbacks } from '../lib/engine/types';
 	// import type { PollGameResponse, UserSession } from '../lib/api/types';
 	import Flex from '$lib/components/Flex.svelte';
 	import Text from '$lib/components/Text.svelte';
+	import type { Game } from '$lib/engine/game';
 
 	let board: HTMLDivElement;
 	let game: Game;
@@ -44,6 +44,8 @@
 	};
 
 	onMount(async () => {
+		const { runGame } = await import('$lib/engine/game');
+
 		game = runGame(board, uiCallbacks);
 
 		turn = game._gameField.turn;

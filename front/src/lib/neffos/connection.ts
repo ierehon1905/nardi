@@ -1,5 +1,6 @@
 import { browser } from '$app/environment';
 import { BACKEND_HOST } from '$lib/constants';
+import Cookies from 'js-cookie';
 
 import { writable, get } from 'svelte/store';
 
@@ -70,7 +71,10 @@ export async function initConnection() {
 			}
 		},
 		{
-			reconnnect: 5
+			reconnnect: 5,
+			headers: {
+				npid: Cookies.get('npid') || ''
+			}
 		}
 	);
 
