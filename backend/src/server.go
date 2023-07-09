@@ -36,7 +36,6 @@ func RunServer() {
 		AllowCredentials: true,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
 		AllowedHeaders:   []string{"Content-Type", "*"},
-		Debug:            true,
 	})
 	app.UseRouter(crs)
 
@@ -132,7 +131,6 @@ func getGamesHandler(ctx iris.Context) {
 	).Offset(
 		(page - 1) * pageSize,
 	).Limit(pageSize).Find(&games)
-	DB.Count(&totalOfAllGames)
 
 	if result.Error != nil {
 		ctx.StatusCode(500)
@@ -140,13 +138,12 @@ func getGamesHandler(ctx iris.Context) {
 		return
 	}
 
-	// ctx.JSON(games)
-	// return a json with fields "items", "total", "page", "pageCount"
 	ctx.JSON(iris.Map{
-		"items": games,
-		"total": totalOfAllGames,
-		"page":  page,
-		"pages": totalOfAllGames / int64(pageSize),
+		"items":    games,
+		"total":    totalOfAllGames,
+		"page":     page,
+		"pages":    totalOfAllGames/int64(pageSize) + 1,
+		"pageSize": pageSize,
 	})
 }
 
